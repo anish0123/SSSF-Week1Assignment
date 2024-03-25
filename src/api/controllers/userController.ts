@@ -53,30 +53,31 @@ const userPost = async (
   next: NextFunction
 ) => {
   try {
-    if (req.body.password) {
-      const hashedPassword = await bcrypt.hash(req.body.password, salt);
-      const _user: Partial<User> = {
-        ...req.body,
-        password: hashedPassword,
-        role: 'user',
-      };
-      const result = await addUser(_user);
-      res.json(result);
+    if (!req.body.password) {
+      throw new CustomError('Password is mandatory', 403);
     }
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const _user: Partial<User> = {
+      ...req.body,
+      password: hashedPassword,
+      role: 'user',
+    };
+    const result = await addUser(_user);
+    res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
 const userPut = async (
-  req: Request<{id: number}, {}, User>,
+  req: Request<{id: string}, {}, User>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
   try {
-    // if (req.user && req.user.role !== 'admin') {
-    //   throw new CustomError('Admin only', 403);
-    // }
+    if (req.user && req.user.role !== 'admin') {
+      throw new CustomError('Admin only', 403);
+    }
     let _user: Partial<User> = req.body;
     if (req.body.password) {
       const hashedPassword = await bcrypt.hash(req.body.password, salt);
@@ -86,7 +87,7 @@ const userPut = async (
         role: 'user',
       };
     }
-    const result = await updateUser(_user, req.params.id);
+    const result = await updateUser(_user, Number(req.params.id));
 
     res.json(result);
   } catch (error) {
@@ -102,22 +103,13 @@ const userPutCurrent = async (
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages: string = errors
-      .array()
-      .map((error) => `${error.msg}: ${error.param}`)
-      .join(', ');
-    console.log('cat_post validation', messages);
-    next(new CustomError(messages, 400));
-    return;
-  }
-
   try {
     const user = req.body;
+    if (!req.user?.user_id) {
+      throw new CustomError('No user', 400);
+    }
 
-    //TODO: FIx the user_id from express request
-    const result = await updateUser(user, 40);
+    const result = await updateUser(user, req.user.user_id);
 
     res.json(result);
   } catch (error) {
@@ -130,26 +122,15 @@ const userPutCurrent = async (
 // userDelete should use validationResult to validate req.params.id
 // userDelete should use req.user to get role
 const userDelete = async (
-  req: Request<{id: number}, {}, {}>,
+  req: Request<{id: string}, {}, {}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages: string = errors
-      .array()
-      .map((error) => `${error.msg}: ${error.param}`)
-      .join(', ');
-    console.log('cat_post validation', messages);
-    next(new CustomError(messages, 400));
-    return;
-  }
-
   try {
     if (req.user && req.user.role !== 'admin') {
-      throw new CustomError('Adming only', 403);
+      throw new CustomError('Admin only', 403);
     }
-    const result = await deleteUser(req.params.id);
+    const result = await deleteUser(Number(req.params.id));
 
     res.json(result);
   } catch (error) {
@@ -162,22 +143,11 @@ const userDeleteCurrent = async (
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages: string = errors
-      .array()
-      .map((error) => `${error.msg}: ${error.param}`)
-      .join(', ');
-    console.log('cat_post validation', messages);
-    next(new CustomError(messages, 400));
-    return;
-  }
-
   try {
-    if (!req.body?.user_id) {
+    if (!req.user?.user_id) {
       throw new CustomError('No user', 400);
     }
-    const result = await deleteUser(req.body.user_id);
+    const result = await deleteUser(req.user.user_id);
 
     res.json(result);
   } catch (error) {

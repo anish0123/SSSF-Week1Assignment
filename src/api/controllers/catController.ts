@@ -6,8 +6,6 @@ import {
   updateCat,
 } from '../models/catModel';
 import {Request, Response, NextFunction} from 'express';
-import CustomError from '../../classes/CustomError';
-import {validationResult, param} from 'express-validator';
 import {MessageResponse} from '../../types/MessageTypes';
 import {Cat, User} from '../../types/DBTypes';
 
@@ -25,17 +23,6 @@ const catListGet = async (
 };
 
 const catGet = async (req: Request, res: Response<Cat>, next: NextFunction) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const messages: string = errors
-      .array()
-      .map((error) => `${error.msg}: ${error.param}`)
-      .join(', ');
-    console.log('cat_post validation', messages);
-    next(new CustomError(messages, 400));
-    return;
-  }
-
   try {
     const id = Number(req.params.id);
     const cat = await getCat(id);
@@ -59,7 +46,7 @@ const catPost = async (
   try {
     const filename = req.file?.filename;
     const [lat, lng] = res.locals.coords;
-    const cat = {...req.body, filename, lat, lng};
+    const cat = {...req.body, filename, lat, lng, owner: req.user?.user_id};
     const result = await addCat(cat);
     res.json(result);
   } catch (error) {

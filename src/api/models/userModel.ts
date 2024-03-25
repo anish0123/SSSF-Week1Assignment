@@ -2,7 +2,7 @@ import {promisePool} from '../../database/db';
 import CustomError from '../../classes/CustomError';
 import {ResultSetHeader, RowDataPacket} from 'mysql2';
 import {User} from '../../types/DBTypes';
-import {MessageResponse} from '../../types/MessageTypes';
+import {MessageResponse, UploadResponse} from '../../types/MessageTypes';
 
 const getAllUsers = async (): Promise<User[]> => {
   const [rows] = await promisePool.execute<RowDataPacket[] & User[]>(
@@ -33,7 +33,7 @@ const getUser = async (userId: number): Promise<User> => {
 };
 
 // TODO: create addUser function
-const addUser = async (data: Partial<User>): Promise<MessageResponse> => {
+const addUser = async (data: Partial<User>): Promise<UploadResponse> => {
   const [headers] = await promisePool.execute<ResultSetHeader>(
     `
     INSERT INTO sssf_user (user_name, email, role, password) 
@@ -44,7 +44,7 @@ const addUser = async (data: Partial<User>): Promise<MessageResponse> => {
   if (headers.affectedRows === 0) {
     throw new CustomError('No users added', 400);
   }
-  return {message: 'User added'};
+  return {message: 'User added', id: headers.insertId};
 };
 
 const updateUser = async (

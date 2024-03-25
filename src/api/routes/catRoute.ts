@@ -46,7 +46,7 @@ router
 
 router
   .route('/:id')
-  .get(param('id').isNumeric(), catGet)
+  .get(param('id').isNumeric(), validationErrors, catGet)
   .put(
     passport.authenticate('jwt', {session: false}),
     param('id').isNumeric(),

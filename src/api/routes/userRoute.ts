@@ -25,7 +25,11 @@ router
     validationErrors,
     userPost
   )
-  .put(passport.authenticate('jwt', {session: false}), userPutCurrent)
+  .put(
+    passport.authenticate('jwt', {session: false}),
+    validationErrors,
+    userPutCurrent
+  )
   .delete(
     passport.authenticate('jwt', {session: false}),
     validationErrors,
@@ -40,8 +44,18 @@ router.get(
 
 router
   .route('/:id')
-  .get(userGet)
-  .put(passport.authenticate('jwt', {session: false}), userPut)
-  .delete(passport.authenticate('jwt', {session: false}), userDelete);
+  .get(param('id').isNumeric(), validationErrors, userGet)
+  .put(
+    passport.authenticate('jwt', {session: false}),
+    param('id').isNumeric(),
+    validationErrors,
+    userPut
+  )
+  .delete(
+    passport.authenticate('jwt', {session: false}),
+    param('id').isNumeric(),
+    validationErrors,
+    userDelete
+  );
 
 export default router;
