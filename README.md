@@ -1,4 +1,4 @@
-# SSSF week 1 exercise. Submit to Oma
+# SSSF week 1 exercise.
 
 This REST API is based on the API done in 2nd year course 'Basic Concepts of Web Applications'/'Web ohjelmoinnin perusteet'
 
@@ -10,11 +10,7 @@ This REST API is based on the API done in 2nd year course 'Basic Concepts of Web
 - `npm run dev` to start development server
 - `npm run test` to run tests
 
-## Assignment
-
-- Your task is to complete all TODOs in the code until all tests are passed
-
-## Create types/interfaces based on these objects:
+## Types/interfaces examples included in this assignment:
 
 Cat:
 
